@@ -28,20 +28,6 @@
     "reloadTime": 2.0
   },
   {
-    "name": "Arp9",
-    "ammo": "EnergyLP01",
-    "mode": "Single",
-    "rpm": 600.0,
-    "mag": 11.0,
-    "dmg": 20.0,
-    "effRange": 1000.0,
-    "maxRange": 10000.0,
-    "bps": 1.0,
-    "spread": 0.025,
-    "ammoShot": 1.0,
-    "reloadTime": 2.0
-  },
-  {
     "name": "P99",
     "ammo": "EnergyE10",
     "mode": "Auto",
