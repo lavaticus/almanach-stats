@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>INFINITY RISING — WEAPON INTEL</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="chart.umd.min.js"></script>
 <style>
   :root {
     --bg:       #080a08;
@@ -31,7 +30,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
     min-height: 100vh;
     overflow-x: hidden;
@@ -81,7 +80,7 @@
   .logo-block {}
 
   .logo-sub {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 11px;
     color: var(--green);
     letter-spacing: 4px;
@@ -91,7 +90,7 @@
   }
 
   h1 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: clamp(22px, 4vw, 40px);
     font-weight: 900;
     color: var(--amber);
@@ -147,14 +146,14 @@
   }
 
   .pill-label { font-size: 10px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
-  .pill-value { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: var(--amber2); }
+  .pill-value { font-family: 'Courier New', Courier, monospace; font-size: 20px; font-weight: 700; color: var(--amber2); }
   .pill-sub   { font-size: 10px; color: var(--dim); }
 
   /* ── SECTION TITLES ── */
   .section { margin-top: 36px; }
 
   .section-title {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
     font-weight: 700;
     color: var(--green);
@@ -238,7 +237,7 @@
   }
 
   th {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 9px;
     letter-spacing: 2px;
     color: var(--amber);
@@ -275,7 +274,7 @@
   .dps-cell { color: var(--amber2); font-weight: bold; }
   .rank-badge {
     display: inline-block;
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 9px;
     padding: 1px 5px;
     background: var(--amber);
@@ -324,7 +323,7 @@
   .pill:nth-child(5) { animation-delay: 0.28s; }
 
   /* tooltip override */
-  .chartjs-tooltip { font-family: 'Share Tech Mono', monospace !important; }
+  .chartjs-tooltip { font-family: 'Courier New', Courier, monospace !important; }
 
   /* ── WEAPON IMAGE TOOLTIP ── */
   #weapon-tooltip {
@@ -359,7 +358,7 @@
     border-bottom: 2px solid var(--amber);
   }
   #weapon-tooltip .tip-name {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 10px;
     font-weight: 700;
     color: var(--amber2);
@@ -592,7 +591,7 @@ fetch('weapon_stats.json')
   })
   .then(RAW => initDashboard(RAW))
   .catch(err => {
-    document.body.innerHTML += `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d110d;border:1px solid #e84040;padding:24px 32px;color:#e84040;font-family:'Share Tech Mono',monospace;z-index:9999">
+    document.body.innerHTML += `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d110d;border:1px solid #e84040;padding:24px 32px;color:#e84040;font-family:'Courier New',Courier,monospace;z-index:9999">
       <b>⚠ COULD NOT LOAD weapon_stats.json</b><br><br>
       Run <b>weapon_stats.py</b> first to generate it,<br>
       then place it in the same folder as this HTML file.<br><br>
@@ -648,7 +647,7 @@ pillsData.forEach(p => {
 
 // ── CHART DEFAULTS ─────────────────────────────────────────────
 Chart.defaults.color = '#7a9070';
-Chart.defaults.font.family = "'Share Tech Mono', monospace";
+Chart.defaults.font.family = "'Courier New', Courier, monospace";
 Chart.defaults.font.size = 11;
 
 const AMBER  = 'rgba(232,160,32,0.85)';
