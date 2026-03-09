@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY RISING — WEAPON INTEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #080a08;
+    --bg2:      #0d110d;
+    --bg3:      #111611;
+    --border:   #1e2e1e;
+    --amber:    #e8a020;
+    --amber2:   #f5c050;
+    --green:    #3ddc6a;
+    --green2:   #1a8c3a;
+    --red:      #e84040;
+    --dim:      #4a5a4a;
+    --text:     #c8d8c0;
+    --text2:    #7a9070;
+    --glow:     0 0 12px rgba(232,160,32,0.4);
+    --glow-g:   0 0 12px rgba(61,220,106,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* scanline overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* grid bg */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(61,220,106,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,220,106,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .logo-block {}
+
+  .logo-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(22px, 4vw, 40px);
+    font-weight: 900;
+    color: var(--amber);
+    letter-spacing: 3px;
+    text-shadow: var(--glow);
+    line-height: 1;
+  }
+
+  h1 span { color: var(--text2); font-weight: 400; }
+
+  .header-meta {
+    text-align: right;
+    color: var(--text2);
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  .header-meta .live {
+    color: var(--green);
+    animation: blink 1.4s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── STAT PILLS ── */
+  .pills {
+    display: flex;
+    gap: 12px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pill {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .pill::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+  }
+
+  .pill-label { font-size: 10px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
+  .pill-value { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: var(--amber2); }
+  .pill-sub   { font-size: 10px; color: var(--dim); }
+
+  /* ── SECTION TITLES ── */
+  .section { margin-top: 36px; }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--green2), transparent);
+  }
+
+  /* ── CHART CARDS ── */
+  .chart-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .chart-grid-2 { grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); }
+  .chart-grid-1 { grid-template-columns: 1fr; }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 20px; height: 20px;
+    border-right: 2px solid var(--amber);
+    border-bottom: 2px solid var(--amber);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 20px; height: 20px;
+    border-left: 2px solid var(--amber);
+    border-top: 2px solid var(--amber);
+  }
+
+  .card-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .card-sub {
+    font-size: 10px;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap { position: relative; }
+
+  /* ── TABLE ── */
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead tr {
+    border-bottom: 1px solid var(--amber);
+  }
+
+  th {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--amber);
+    padding: 8px 12px;
+    text-align: right;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+
+  th:hover { color: var(--amber2); }
+  th.sort-active { color: var(--amber2); }
+  th:first-child { text-align: left; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(232,160,32,0.05); }
+
+  tbody tr.top-dps { background: rgba(232,160,32,0.08); }
+  tbody tr.top-dps td:first-child { color: var(--amber2); }
+
+  td {
+    padding: 7px 12px;
+    text-align: right;
+    color: var(--text);
+  }
+
+  td:first-child { text-align: left; color: var(--text2); }
+
+  .dps-cell { color: var(--amber2); font-weight: bold; }
+  .rank-badge {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    padding: 1px 5px;
+    background: var(--amber);
+    color: var(--bg);
+    margin-right: 6px;
+  }
+
+  .bar-inline {
+    display: inline-block;
+    height: 6px;
+    background: linear-gradient(90deg, var(--amber), var(--amber2));
+    vertical-align: middle;
+    margin-left: 6px;
+    opacity: 0.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.12s; }
+  .card:nth-child(3) { animation-delay: 0.19s; }
+  .card:nth-child(4) { animation-delay: 0.26s; }
+
+  .pill:nth-child(1) { animation-delay: 0.0s; }
+  .pill:nth-child(2) { animation-delay: 0.07s; }
+  .pill:nth-child(3) { animation-delay: 0.14s; }
+  .pill:nth-child(4) { animation-delay: 0.21s; }
+  .pill:nth-child(5) { animation-delay: 0.28s; }
+
+  /* tooltip override */
+  .chartjs-tooltip { font-family: 'Share Tech Mono', monospace !important; }
+
+  /* ── WEAPON IMAGE TOOLTIP ── */
+  #weapon-tooltip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    background: rgba(8,10,8,0.96);
+    border: 1px solid var(--amber);
+    padding: 10px 12px 12px;
+    box-shadow: 0 0 24px rgba(232,160,32,0.2), 0 8px 32px rgba(0,0,0,0.8);
+    min-width: 240px;
+    max-width: 340px;
+  }
+  #weapon-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 14px; height: 14px;
+    border-left: 2px solid var(--amber);
+    border-top: 2px solid var(--amber);
+  }
+  #weapon-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 14px; height: 14px;
+    border-right: 2px solid var(--amber);
+    border-bottom: 2px solid var(--amber);
+  }
+  #weapon-tooltip .tip-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--amber2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  #weapon-tooltip .tip-skin {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  #weapon-tooltip img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 10px rgba(232,160,32,0.15));
+  }
+  #weapon-tooltip .tip-no-img {
+    font-size: 10px;
+    color: var(--dim);
+    padding: 8px 0;
+  }
+  #weapon-tooltip .tip-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+    width: 100%;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+  }
+  #weapon-tooltip .tip-stats span { color: var(--text2); }
+  #weapon-tooltip .tip-stats b    { color: var(--amber2); text-align: right; }
+</style>
+</head>
+<body>
+<div id="weapon-tooltip">
+  <div class="tip-name" id="tip-name"></div>
+  <div class="tip-skin" id="tip-skin"></div>
+  <img id="tip-img" src="" alt="">
+  <div class="tip-no-img" id="tip-no-img">NO IMAGE AVAILABLE</div>
+  <div class="tip-stats" id="tip-stats"></div>
+</div>
+<div class="wrap">
+
+  <header>
+    <div class="logo-block">
+      <div class="logo-sub">// classified intel — armoury database</div>
+      <h1>INFINITY RISING <span>/ WEAPONS</span></h1>
+    </div>
+    <div class="header-meta">
+      <div>● VERSION <span class="live">0.3.9H</span></div>
+      <div>ARMOURY DATABASE</div>
+      <div id="ts"></div>
+    </div>
+  </header>
+
+  <div class="pills" id="pills"></div>
+
+  <!-- DPS Chart -->
+  <div class="section">
+    <div class="section-title">Damage Per Second (DPS)</div>
+    <div class="chart-grid chart-grid-1">
+      <div class="card">
+        <div class="card-title">DPS Ranking — All Weapons</div>
+        <div class="card-sub">Calculated as: (Damage × BulletsPerShot × ShotsPerMag) ÷ (TimeToEmptyMag + 2s reload)</div>
+        <div class="chart-wrap" style="height:340px">
+          <canvas id="dpsChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two charts side by side -->
+  <div class="section">
+    <div class="section-title">Firepower Breakdown</div>
+    <div class="chart-grid chart-grid-2">
+      <div class="card">
+        <div class="card-title">Base Damage per Hit</div>
+        <div class="card-sub">Raw damage × bullets per shot (total per trigger pull)</div>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="damageChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Firing Rate</div>
+        <div class="card-sub">Rounds per minute</div>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="rpmChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Range + Spread -->
+  <div class="section">
+    <div class="section-title">Range & Accuracy</div>
+    <div class="chart-grid chart-grid-2">
+      <div class="card">
+        <div class="card-title">Effective vs Max Range</div>
+        <div class="card-sub">Distances in meters (converted from UE5 cm)</div>
+        <div class="chart-wrap" style="height:320px">
+          <canvas id="rangeChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Bullet Spread</div>
+        <div class="card-sub">Lower = more accurate</div>
+        <div class="chart-wrap" style="height:320px">
+          <canvas id="spreadChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mag capacity -->
+  <div class="section">
+    <div class="section-title">Magazine & Ammo</div>
+    <div class="chart-grid chart-grid-1">
+      <div class="card">
+        <div class="card-title">Magazine Capacity</div>
+        <div class="card-sub">Total rounds before reload</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="magChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full stats table -->
+  <div class="section">
+    <div class="section-title">Full Stats Table</div>
+    <div class="card">
+      <div class="card-title">All Weapons — Sorted by DPS</div>
+      <div class="card-sub">Click column headers to sort</div>
+      <div class="table-scroll">
+        <table id="statsTable">
+          <thead>
+            <tr>
+              <th data-key="name"      data-dir="asc"  data-type="str">Weapon</th>
+              <th data-key="ammo"      data-dir="asc"  data-type="str">Ammo</th>
+              <th data-key="mode"      data-dir="asc"  data-type="str">Mode</th>
+              <th data-key="dps"       data-dir="desc" data-type="num" class="sort-active">DPS ▼</th>
+              <th data-key="totalDmgPerShot" data-dir="desc" data-type="num">Damage</th>
+              <th data-key="rpm"       data-dir="desc" data-type="num">RPM</th>
+              <th data-key="mag"       data-dir="desc" data-type="num">Mag</th>
+              <th data-key="effRangeM" data-dir="desc" data-type="num">Eff. Range (m)</th>
+              <th data-key="maxRangeM" data-dir="desc" data-type="num">Max Range (m)</th>
+              <th data-key="spread"    data-dir="desc" data-type="num">Spread</th>
+              <th data-key="ammoShot"  data-dir="desc" data-type="num">Ammo/Shot</th>
+              <th data-key="reloadTime" data-dir="asc" data-type="num">Reload (s)</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>INFINITY RISING // ARMOURY INTEL v1.0</span>
+    <span>VERSION 0.3.9H // UE5.6</span>
+  </footer>
+
+</div>
+
+<script>
+// ── LOAD DATA FROM weapon_stats.json ──────────────────────────
+fetch('weapon_stats.json')
+  .then(r => {
+    if (!r.ok) throw new Error('weapon_stats.json not found');
+    return r.json();
+  })
+  .then(RAW => initDashboard(RAW))
+  .catch(err => {
+    document.body.innerHTML += `<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0d110d;border:1px solid #e84040;padding:24px 32px;color:#e84040;font-family:'Share Tech Mono',monospace;z-index:9999">
+      <b>⚠ COULD NOT LOAD weapon_stats.json</b><br><br>
+      Run <b>weapon_stats.py</b> first to generate it,<br>
+      then place it in the same folder as this HTML file.<br><br>
+      <small style="color:#7a9070">${err.message}</small>
+    </div>`;
+  });
+
+function initDashboard(RAW) {
+
+// ── COMPUTED ──────────────────────────────────────────────────
+const weapons = RAW.map(w => {
+  const shotsPerMag    = w.mag / w.ammoShot;
+  const timeToEmptyMag = shotsPerMag / (w.rpm / 60);
+  const fullCycleTime  = timeToEmptyMag + w.reloadTime;
+  const totalDmgPerMag = w.dmg * w.bps * shotsPerMag;
+  const dps = Math.round((totalDmgPerMag / fullCycleTime) * 10) / 10;
+  return {
+    ...w,
+    dps,
+    totalDmgPerShot: w.dmg * w.bps,
+    effRangeM: w.effRange / 100,
+    maxRangeM: w.maxRange / 100,
+  };
+}).sort((a, b) => b.dps - a.dps);
+
+
+// ── TIMESTAMP ──────────────────────────────────────────────────
+document.getElementById('ts').textContent = new Date().toUTCString().replace('GMT','UTC');
+
+// ── PILLS ──────────────────────────────────────────────────────
+
+const topDPS = weapons[0];
+const highestDmg = [...weapons].sort((a,b)=>b.totalDmgPerShot - a.totalDmgPerShot)[0];
+const longestRange = [...weapons].sort((a,b)=>b.maxRangeM - a.maxRangeM)[0];
+const fastestRPM  = [...weapons].sort((a,b)=>b.rpm - a.rpm)[0];
+
+const pillsData = [
+  { label:'Total Weapons', value: weapons.length, sub: 'in database' },
+  { label:'Top DPS',        value: topDPS.dps,      sub: topDPS.name },
+  { label:'Highest Dmg/Shot', value: highestDmg.totalDmgPerShot, sub: highestDmg.name },
+  { label:'Max Range',      value: longestRange.maxRangeM + 'm', sub: longestRange.name },
+  { label:'Fastest RPM',    value: fastestRPM.rpm,  sub: fastestRPM.name },
+];
+
+const pillsEl = document.getElementById('pills');
+pillsData.forEach(p => {
+  pillsEl.innerHTML += `<div class="pill">
+    <span class="pill-label">${p.label}</span>
+    <span class="pill-value">${p.value}</span>
+    <span class="pill-sub">${p.sub}</span>
+  </div>`;
+});
+
+// ── CHART DEFAULTS ─────────────────────────────────────────────
+Chart.defaults.color = '#7a9070';
+Chart.defaults.font.family = "'Share Tech Mono', monospace";
+Chart.defaults.font.size = 11;
+
+const AMBER  = 'rgba(232,160,32,0.85)';
+const AMBER2 = 'rgba(245,192,80,0.6)';
+const GREEN  = 'rgba(61,220,106,0.75)';
+const RED    = 'rgba(232,64,64,0.75)';
+const DIM    = 'rgba(74,90,74,0.5)';
+
+const gridColor   = 'rgba(30,46,30,0.8)';
+const borderColor = 'rgba(30,46,30,1)';
+
+function baseBarOptions(indexAxis = 'y') {
+  return {
+    indexAxis,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, border: { color: borderColor }, ticks: { color: '#7a9070' } },
+      y: { grid: { color: gridColor }, border: { color: borderColor }, ticks: { color: '#c8d8c0' } },
+    }
+  };
+}
+
+// ── DPS CHART ──────────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => b.dps - a.dps);
+  const maxDps = sorted[0].dps;
+  const ctx = document.getElementById('dpsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [{
+        data: sorted.map(w => w.dps),
+        backgroundColor: sorted.map(w =>
+          w.dps === maxDps   ? AMBER :
+          w.dps > maxDps*0.5 ? GREEN :
+                               'rgba(61,220,106,0.35)'
+        ),
+        borderColor: sorted.map(w =>
+          w.dps === maxDps ? '#f5c050' : '#3ddc6a'
+        ),
+        borderWidth: 1,
+        borderRadius: 0,
+      }]
+    },
+    options: {
+      ...baseBarOptions('y'),
+      plugins: {
+        ...baseBarOptions('y').plugins,
+        tooltip: {
+          ...baseBarOptions('y').plugins.tooltip,
+          callbacks: {
+            label: ctx => ` DPS: ${ctx.raw}  (mag:${sorted[ctx.dataIndex].mag} × ${sorted[ctx.dataIndex].dmg}dmg × ${sorted[ctx.dataIndex].bps}bps ÷ (fire+2s reload))`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── DAMAGE CHART ──────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => b.totalDmgPerShot - a.totalDmgPerShot);
+  const ctx = document.getElementById('damageChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [{
+        label: 'Total Dmg/Shot',
+        data: sorted.map(w => w.totalDmgPerShot),
+        backgroundColor: AMBER2,
+        borderColor: '#e8a020',
+        borderWidth: 1,
+      }]
+    },
+    options: baseBarOptions('y')
+  });
+}
+
+// ── RPM CHART ──────────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => b.rpm - a.rpm);
+  const ctx = document.getElementById('rpmChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [{
+        label: 'RPM',
+        data: sorted.map(w => w.rpm),
+        backgroundColor: GREEN,
+        borderColor: '#3ddc6a',
+        borderWidth: 1,
+      }]
+    },
+    options: baseBarOptions('y')
+  });
+}
+
+// ── RANGE CHART ────────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => b.maxRangeM - a.maxRangeM);
+  const ctx = document.getElementById('rangeChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [
+        {
+          label: 'Max Range (m)',
+          data: sorted.map(w => w.maxRangeM),
+          backgroundColor: 'rgba(61,220,106,0.25)',
+          borderColor: '#1a8c3a',
+          borderWidth: 1,
+        },
+        {
+          label: 'Eff. Range (m)',
+          data: sorted.map(w => w.effRangeM),
+          backgroundColor: GREEN,
+          borderColor: '#3ddc6a',
+          borderWidth: 1,
+        }
+      ]
+    },
+    options: {
+      ...baseBarOptions('y'),
+      plugins: {
+        ...baseBarOptions('y').plugins,
+        legend: {
+          display: true,
+          labels: { color: '#7a9070', boxWidth: 12, font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+// ── SPREAD CHART ───────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => a.spread - b.spread);
+  const ctx = document.getElementById('spreadChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [{
+        label: 'Spread',
+        data: sorted.map(w => w.spread),
+        backgroundColor: sorted.map(w =>
+          w.spread <= 0.015 ? GREEN :
+          w.spread <= 0.025 ? AMBER2 :
+          RED
+        ),
+        borderWidth: 1,
+        borderColor: 'transparent',
+      }]
+    },
+    options: {
+      ...baseBarOptions('y'),
+      plugins: {
+        ...baseBarOptions('y').plugins,
+        tooltip: {
+          ...baseBarOptions('y').plugins.tooltip,
+          callbacks: { label: ctx => ` Spread: ${ctx.raw} — ${ctx.raw <= 0.015 ? 'precise' : ctx.raw <= 0.025 ? 'moderate' : 'wide'}` }
+        }
+      }
+    }
+  });
+}
+
+// ── MAG CHART ─────────────────────────────────────────────────
+{
+  const sorted = [...weapons].sort((a,b) => b.mag - a.mag);
+  const ctx = document.getElementById('magChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(w => w.name),
+      datasets: [{
+        label: 'Magazine',
+        data: sorted.map(w => w.mag),
+        backgroundColor: 'rgba(61,220,106,0.5)',
+        borderColor: '#3ddc6a',
+        borderWidth: 1,
+      }]
+    },
+    options: baseBarOptions('x')
+  });
+}
+
+// ── TABLE ──────────────────────────────────────────────────────
+const tbody = document.getElementById('tableBody');
+const maxDps = weapons[0].dps;
+
+let tableSortKey = 'dps';
+let tableSortDir = 'desc';
+
+function renderTable() {
+  const sorted = [...weapons].sort((a, b) => {
+    const av = a[tableSortKey];
+    const bv = b[tableSortKey];
+    const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+    return tableSortDir === 'asc' ? cmp : -cmp;
+  });
+
+  tbody.innerHTML = '';
+  sorted.forEach((w, i) => {
+    const barW = Math.round((w.dps / maxDps) * 60);
+    const isTop = tableSortKey === 'dps' && i === 0;
+    tbody.innerHTML += `<tr class="${isTop ? 'top-dps' : ''}">
+      <td>${i < 3 && tableSortKey === 'dps' ? `<span class="rank-badge">#${i+1}</span>` : ''}${w.name}</td>
+      <td>${w.ammo}</td>
+      <td>${w.mode}</td>
+      <td class="dps-cell">${w.dps}<span class="bar-inline" style="width:${barW}px"></span></td>
+      <td>${w.totalDmgPerShot}</td>
+      <td>${w.rpm}</td>
+      <td>${w.mag}</td>
+      <td>${w.effRangeM}</td>
+      <td>${w.maxRangeM}</td>
+      <td>${w.spread}</td>
+      <td>${w.ammoShot}</td>
+      <td>${w.reloadTime}</td>
+    </tr>`;
+  });
+}
+
+// Attach click handlers to all th elements
+document.querySelectorAll('#statsTable thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    // Toggle direction if same column, otherwise use default for that column
+    if (key === tableSortKey) {
+      tableSortDir = tableSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      tableSortKey = key;
+      tableSortDir = th.dataset.dir; // default direction per column
+    }
+
+    // Update header indicators
+    document.querySelectorAll('#statsTable thead th').forEach(t => {
+      t.classList.remove('sort-active');
+      // Strip old arrows
+      t.textContent = t.textContent.replace(' ▼', '').replace(' ▲', '');
+    });
+    th.classList.add('sort-active');
+    th.textContent = th.textContent + (tableSortDir === 'desc' ? ' ▼' : ' ▲');
+
+    renderTable();
+  });
+});
+
+renderTable();
+
+// ── WEAPON IMAGE TOOLTIP ───────────────────────────────────────
+// Maps weapon name → image filename(s) in weapon-images/ folder
+const WEAPON_IMAGES = {
+  'MeatGrinder':   ['MeatGrinder_Olive'],
+  'HG7':           ['HG7_Gold'],
+  'Double-Dragon': ['DoubleDragon'],
+  'TigerM9S-SV':   ['TigerM9S_SuperverseGold', 'TigerM9S_SuperverseGreen', 'TigerM9S_SuperversePastel'],
+  'TigerM9S':      ['TigerM9S_Blue'],
+  'TigerM9':       ['TigerM9_Red-White'],
+  'SK-47':         ['SK47_Camo'],
+  'Outlaw':        ['Outlaw_Gold'],
+  'Trench-12':     ['Trench12_Grey'],
+  'MordredMk.II':  ['MordredMkII_Bronze'],
+  'S92':           ['S92_Bronze'],
+  'PR1':           ['PR1_Olive'],
+  'P99':           ['P99_Olive'],
+  'Sentinel45':    ['Sentinel45_Gold'],
+};
+
+const tooltip  = document.getElementById('weapon-tooltip');
+const tipName  = document.getElementById('tip-name');
+const tipSkin  = document.getElementById('tip-skin');
+const tipImg   = document.getElementById('tip-img');
+const tipNoImg = document.getElementById('tip-no-img');
+
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+function showWeaponTooltip(weaponName) {
+  const skins = WEAPON_IMAGES[weaponName];
+  const w = weapons.find(x => x.name === weaponName);
+  tipName.textContent = weaponName;
+
+  if (skins && skins.length > 0) {
+    const file = skins[0];
+    const skinLabel = file.includes('_') ? file.substring(file.indexOf('_') + 1) : '';
+    tipSkin.textContent = skinLabel ? 'SKIN: ' + skinLabel.toUpperCase() : '';
+    tipImg.src = 'weapon-images/' + file + '.png';
+    tipImg.style.display = 'block';
+    tipNoImg.style.display = 'none';
+  } else {
+    tipSkin.textContent = '';
+    tipImg.style.display = 'none';
+    tipNoImg.style.display = 'block';
+  }
+
+  if (w) {
+    document.getElementById('tip-stats').innerHTML =
+      `<span>DPS</span><b>${w.dps}</b>` +
+      `<span>Damage</span><b>${w.totalDmgPerShot}</b>` +
+      `<span>RPM</span><b>${w.rpm}</b>` +
+      `<span>Mag</span><b>${w.mag}</b>` +
+      `<span>Eff. Range</span><b>${w.effRangeM}m</b>` +
+      `<span>Spread</span><b>${w.spread}</b>`;
+  }
+
+  tooltip.style.display = 'flex';
+  positionTooltip();
+}
+
+function hideWeaponTooltip() {
+  tooltip.style.display = 'none';
+}
+
+function positionTooltip() {
+  const tw = tooltip.offsetWidth;
+  const th = tooltip.offsetHeight;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const offset = 20;
+  let x = mouseX + offset;
+  let y = mouseY + offset;
+  if (x + tw > vw - 12) x = mouseX - tw - offset;
+  if (y + th > vh - 12) y = mouseY - th - offset;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+
+document.addEventListener('mousemove', positionTooltip);
+
+// Attach to all chart canvases
+document.querySelectorAll('canvas').forEach(canvas => {
+  canvas.addEventListener('mousemove', e => {
+    const chart = Chart.getChart(canvas);
+    if (!chart) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const mouseXrel  = e.clientX - canvasRect.left;
+    const mouseYrel  = e.clientY - canvasRect.top;
+
+    // Try direct bar hit first
+    const pts = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+
+    if (pts.length > 0) {
+      showWeaponTooltip(chart.data.labels[pts[0].index]);
+      return;
+    }
+
+    // Also check if mouse is over a Y-axis label (for horizontal bar charts)
+    const yAxis = chart.scales['y'];
+    if (yAxis) {
+      const ticks = yAxis.ticks;
+      for (let i = 0; i < ticks.length; i++) {
+        const yPos = yAxis.getPixelForTick(i);
+        // Label hit area: full width of left area, ±10px vertically around tick
+        if (mouseXrel <= yAxis.right && Math.abs(mouseYrel - yPos) < 10) {
+          showWeaponTooltip(chart.data.labels[i]);
+          return;
+        }
+      }
+    }
+
+    // Also check X-axis labels (for vertical bar charts)
+    const xAxis = chart.scales['x'];
+    if (xAxis && chart.config.options.indexAxis !== 'y') {
+      const ticks = xAxis.ticks;
+      for (let i = 0; i < ticks.length; i++) {
+        const xPos = xAxis.getPixelForTick(i);
+        if (mouseYrel >= xAxis.top && Math.abs(mouseXrel - xPos) < 20) {
+          showWeaponTooltip(chart.data.labels[i]);
+          return;
+        }
+      }
+    }
+
+    hideWeaponTooltip();
+  });
+  canvas.addEventListener('mouseleave', hideWeaponTooltip);
+});
+
+} // end initDashboard
+</script>
+</body>
+</html>
